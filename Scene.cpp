@@ -19,7 +19,6 @@ void CScene::BuildLightsAndMaterials()
 	::ZeroMemory(m_pLights, sizeof(LIGHTS));
 
 	m_pLights->m_xmf4GlobalAmbient = XMFLOAT4(0.034f, 0.034f, 0.034f, 1.0f);
-
 	m_pLights->m_pLights[0].m_bEnable = true;
 	m_pLights->m_pLights[0].m_nType = POINT_LIGHT;
 	m_pLights->m_pLights[0].m_fRange = 100.0f;
