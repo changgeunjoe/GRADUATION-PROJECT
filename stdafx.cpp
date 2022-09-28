@@ -54,7 +54,8 @@ ID3D12Resource *CreateBufferResource(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 
 				D3D12_RANGE d3dReadRange = { 0, 0 };
 				UINT8 *pBufferDataBegin = NULL;
-				(*ppd3dUploadBuffer)->Map(0, &d3dReadRange, (void **)&pBufferDataBegin);
+				(*ppd3dUploadBuffer)->Map(0, &d3dReadRange, (void **)&pBufferDataBegin);//Map을 호출하고 BYTE* 타입의 포인터를 넘겨주면, 
+																						//UnMap을 호출하기 전까지는UploadBuffer에 접근할 수 있는 CPU 주소를 넘겨준다.이를 통해 매 프레임마다 값을 집어넣는다.
 				memcpy(pBufferDataBegin, pData, nBytes);
 				(*ppd3dUploadBuffer)->Unmap(0, NULL);
 

@@ -219,12 +219,12 @@ void CGameFramework::CreateRenderTargetViews()
 void CGameFramework::CreateDepthStencilView()
 {
 	D3D12_RESOURCE_DESC d3dResourceDesc;
-	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	d3dResourceDesc.Alignment = 0;
-	d3dResourceDesc.Width = m_nWndClientWidth;
-	d3dResourceDesc.Height = m_nWndClientHeight;
-	d3dResourceDesc.DepthOrArraySize = 1;
-	d3dResourceDesc.MipLevels = 1;
+	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;//리소르의 차원을 나타낸다.
+	d3dResourceDesc.Alignment = 0;//정렬을 지정합니다.
+	d3dResourceDesc.Width = m_nWndClientWidth;//리소스의 넓이
+	d3dResourceDesc.Height = m_nWndClientHeight;//리소스의 높이
+	d3dResourceDesc.DepthOrArraySize = 1;//3D인 경우 리소스의 깊이를 지정하고 1D 또는 2D 리소스의 배열인 경우 배열 크기를 지정합니다.
+	d3dResourceDesc.MipLevels = 1; //MIP 레벨의 수를 지정합니다.
 	d3dResourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	d3dResourceDesc.SampleDesc.Count = (m_bMsaa4xEnable) ? 4 : 1;
 	d3dResourceDesc.SampleDesc.Quality = (m_bMsaa4xEnable) ? (m_nMsaa4xQualityLevels - 1) : 0;
@@ -246,22 +246,9 @@ void CGameFramework::CreateDepthStencilView()
 
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle = m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	m_pd3dDevice->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &d3dClearValue, __uuidof(ID3D12Resource), (void **)&m_pd3dDepthStencilBuffer);
-	/*
-	m_pd3dDevice->CreateCommittedResource(&d3dHeapProperties, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, D3D12_RESOURCE_STATE_COMMON, &d3dClearValue, __uuidof(ID3D12Resource), (void **)&m_pd3dDepthStencilBuffer);
-	m_pd3dDevice->CreateDepthStencilView(m_pd3dDepthStencilBuffer, NULL, d3dDsvCPUDescriptorHandle);
+	
 
-	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
-	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
-	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	d3dResourceBarrier.Transition.pResource = m_pd3dDepthStencilBuffer;
-	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
-	*/
-
-	D3D12_DEPTH_STENCIL_VIEW_DESC d3dDepthStencilViewDesc;
+	D3D12_DEPTH_STENCIL_VIEW_DESC d3dDepthStencilViewDesc;//깊이 스텐실 버퍼에 대해서 알려
 	::ZeroMemory(&d3dDepthStencilViewDesc, sizeof(D3D12_DEPTH_STENCIL_VIEW_DESC));
 	d3dDepthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	d3dDepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -496,7 +483,7 @@ void CGameFramework::ProcessInput()
 
 void CGameFramework::AnimateObjects()
 {
-	if (m_pScene) m_pScene->AnimateObjects(m_GameTimer.GetTimeElapsed());
+	if (m_pScene) m_pScene->AnimateObjects(m_GameTimer.GetTimeElapsed());//->수정
 }
 
 void CGameFramework::WaitForGpuComplete()

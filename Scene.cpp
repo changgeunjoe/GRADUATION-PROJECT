@@ -91,14 +91,14 @@ void CScene::BuildLightsAndMaterials()
 
 void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
-	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
+	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);//쉐이더에 필요한 루트시그니쳐를 만들어 줍니다.
 
 	m_nShaders = 1;
 	m_ppShaders = new CShader*[m_nShaders];
 
 	CObjectsShader *pObjectShader = new CObjectsShader();
 	pObjectShader->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
-	pObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, "Models/Scene.bin");
+	pObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, "Models/Scene.bin");//->커멘드 리스트에 저장(커멘트 리스트는 cpu 아마 커멘드 큐 )
 	m_ppShaders[0] = pObjectShader;
 
 	BuildLightsAndMaterials();
@@ -132,9 +132,30 @@ void CScene::ReleaseUploadBuffers()
 	for (int i = 0; i < m_nShaders; i++) m_ppShaders[i]->ReleaseUploadBuffers();
 }
 
-ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevice)
+ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevice)//루트 시그니쳐를 만든다.
 {
 	ID3D12RootSignature *pd3dGraphicsRootSignature = NULL;
+
+	//D3D12_DESCRIPTOR_RANGE pd3dDescriptorRanges[3];->디스크립터 레인지 사용
+
+	//pd3dDescriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	//pd3dDescriptorRanges[0].NumDescriptors = 1;
+	//pd3dDescriptorRanges[0].BaseShaderRegister = 2; //b2: Game Objects
+	//pd3dDescriptorRanges[0].RegisterSpace = 0;
+	//pd3dDescriptorRanges[0].OffsetInDescriptorsFromTableStart = 0;
+
+	//pd3dDescriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//pd3dDescriptorRanges[1].NumDescriptors = 1;
+	//pd3dDescriptorRanges[1].BaseShaderRegister = 0; //t0: Texture2DArray
+	//pd3dDescriptorRanges[1].RegisterSpace = 0;
+	//pd3dDescriptorRanges[1].OffsetInDescriptorsFromTableStart = 0;
+
+	//pd3dDescriptorRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	//pd3dDescriptorRanges[2].NumDescriptors = 5;
+	//pd3dDescriptorRanges[2].BaseShaderRegister = 1; //t1: Texture2D<float4>
+	//pd3dDescriptorRanges[2].RegisterSpace = 0;
+	//pd3dDescriptorRanges[2].OffsetInDescriptorsFromTableStart = 0;
+
 
 	D3D12_ROOT_PARAMETER pd3dRootParameters[5];
 
@@ -149,12 +170,12 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	pd3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	pd3dRootParameters[2].Descriptor.ShaderRegister = 2; //Materials
+	pd3dRootParameters[2].Descriptor.ShaderRegister = 2; //Materials//b2
 	pd3dRootParameters[2].Descriptor.RegisterSpace = 0;
 	pd3dRootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	pd3dRootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	pd3dRootParameters[3].Descriptor.ShaderRegister = 3; //Lights
+	pd3dRootParameters[3].Descriptor.ShaderRegister = 3; //Lights//b3
 	pd3dRootParameters[3].Descriptor.RegisterSpace = 0;
 	pd3dRootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
@@ -164,10 +185,10 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[4].Constants.RegisterSpace = 0;
 	pd3dRootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	D3D12_STATIC_SAMPLER_DESC d3dSamplerDesc;
+	D3D12_STATIC_SAMPLER_DESC d3dSamplerDesc;//텍스쳐 매핑에 사용하는 샘플러 
 	::ZeroMemory(&d3dSamplerDesc, sizeof(D3D12_STATIC_SAMPLER_DESC));
 	d3dSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	d3dSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+	//d3dSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
 	d3dSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	d3dSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	d3dSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -199,7 +220,7 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	return(pd3dGraphicsRootSignature);
 }
 
-void CScene::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
+void CScene::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)//쉐이더 형태들을 만들어준다.
 {
 	UINT ncbElementBytes = ((sizeof(LIGHTS) + 255) & ~255); //256의 배수
 	m_pd3dcbLights = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
@@ -212,7 +233,7 @@ void CScene::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsComma
 	m_pd3dcbMaterials->Map(0, NULL, (void **)&m_pcbMappedMaterials);
 }
 
-void CScene::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
+void CScene::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)//->//쉐이더 형태들을 만들어준다.
 {
 	::memcpy(m_pcbMappedLights, m_pLights, sizeof(LIGHTS));
 	::memcpy(m_pcbMappedMaterials, m_pMaterials, sizeof(MATERIALS));
@@ -253,7 +274,6 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	{
 		m_ppShaders[i]->AnimateObjects(fTimeElapsed);
 	}
-
 	if (m_pLights)
 	{
 		m_pLights->m_pLights[1].m_xmf3Position = m_pPlayer->GetPosition();
